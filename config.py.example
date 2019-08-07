@@ -1,0 +1,9 @@
+#!/usr/bin/env python
+
+token = 'qwertyuiopasdfghjklzxcvbnm'
+
+enemigos = ['teke teku#4814', 'Druidoide#9957', 'Fendor Bot#0900', 'Fendor 93#0443', 'lMagico#9639', 'etc#6969']
+
+main_server_id = 432329008957358101
+
+main_channel_id = 586676358709641229

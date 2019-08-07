@@ -1,0 +1,8 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+.idea/
+config.py
+nuevas-frases.txt
+output.mp3
+temp.mp3
+teke.db
