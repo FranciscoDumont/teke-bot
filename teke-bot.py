@@ -59,15 +59,6 @@ class TekeBot(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix='?', description=description)
 
-        self.TRISTE = 1
-        self.TEKE = 0
-        self.MAIN_SERVER = self.get_guild(config.main_server_id)
-        self.MAIN_CHANNEL = self.get_channel(config.main_channel_id)
-
-        schedule.every().day.at("00:01").do(self.saludar_cumples)
-        # create the background task and run it in the background
-        self.bg_task = self.loop.create_task(self.my_background_task())
-
         for extension in INITIAL_EXTENSIONS:
             try:
                 self.load_extension(extension)
@@ -81,6 +72,15 @@ class TekeBot(commands.Bot):
         print(self.user.name)
         print(self.user.id)
         print('------')
+
+        self.TRISTE = 1
+        self.TEKE = 0
+        self.MAIN_SERVER = self.get_guild(config.main_server_id)
+        self.MAIN_CHANNEL = self.get_channel(config.main_channel_id)
+
+        schedule.every().day.at("00:01").do(self.saludar_cumples)
+        # create the background task and run it in the background
+        self.bg_task = self.loop.create_task(self.my_background_task())
 
     async def on_message(self, message):
         await self.process_commands(message)
@@ -383,7 +383,7 @@ class TekeBot(commands.Bot):
                 await user.voice.channel.connect()
 
                 source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('/home/panchi/Music/cancion-feliz-cumple.mp3'))
-                await self.MAIN_SERVER.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
+                self.MAIN_SERVER.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
 
         try:
             cumpleañeros = database.get_today_cumple()
