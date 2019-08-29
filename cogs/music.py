@@ -100,6 +100,20 @@ class Music(commands.Cog):
 
         await ctx.send('Now playing: {}'.format(fullpath))
 
+    @commands.command()
+    async def tts(self, ctx, *text: str):
+        if ctx.voice_client is None:
+            return
+        if ctx.message.author.voice.channel is None:
+            return
+        text = ' '.join(text)
+        tts_es = gTTS(text, lang='es')
+        tts_es.save('temp.mp3')
+        #os.system("sox temp.mp3 temp.mp3 speed 0.95 rate 24k pitch -850 reverb 60 50 75")
+        #os.system("ffmpeg -hide_banner -loglevel panic -i temp.mp3 -y -c copy output.mp3")
+        source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('temp.mp3'))
+        ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
+
 
 def setup(bot):
     bot.add_cog(Music(bot))

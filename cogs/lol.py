@@ -246,6 +246,21 @@ class LOL(commands.Cog):
         print("Autor: {} Cant: {}".format(str(autor), len(frases)))
         await ctx.send(random.choice(frases))
 
+    @commands.command()
+    async def agregar(self, ctx, *frase_nueva: str):
+        """Agrega una nueva frase """
+
+        frase_nueva = ' '.join(frase_nueva)
+        linea = time.ctime() + ' - ' + ctx.message.author.name + ': ' + frase_nueva
+        print(linea)
+        with open("nuevas-frases.txt", "a+") as text_file:
+            print(linea, file=text_file)
+            await ctx.send("Agregada con exito")
+
+    @commands.command()
+    async def s(self, ctx):
+        await ctx.send("Link del stream:\nhttps://discordapp.com/channels/432329008957358101/470075380141654026")
+
 
 def setup(bot):
     bot.add_cog(LOL(bot))

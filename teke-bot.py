@@ -50,7 +50,8 @@ emojis = {
 INITIAL_EXTENSIONS = [
     'cogs.music',
     'cogs.rpg',
-    'cogs.lol'
+    'cogs.lol',
+    'cogs.admin'
 ]
 
 
@@ -168,8 +169,6 @@ class TekeBot(commands.Bot):
             await teke_typing(message.channel)
             await message.channel.send(random.choice(frasesTeke.frases))
 
-
-
         #Dejar este if al final
         if message.author == self.user:
             def check(reaction, user):
@@ -227,12 +226,8 @@ class TekeBot(commands.Bot):
                 database.social_add(message.author.id, 2)
                 #print(respuesta_gay)
 
-
-
-
         if any(palabra in message.content.lower() for palabra in odio):
             database.social_add(message.author.id, -2)
-
 
 
     async def triste_estado(self, message):
@@ -262,109 +257,6 @@ class TekeBot(commands.Bot):
         await message.channel.send(random.choice(frasesTeke.romantico))
         await asyncio.sleep(30)
         await self.change_presence(status=discord.Status.online)
-
-    async def add(self, ctx, left: int, right: int):
-        """Adds two numbers together."""
-        await ctx.send(left + right)
-
-    async def roll(self, ctx, dice: str):
-        """Rolls a dice in NdN format."""
-        try:
-            rolls, limit = map(int, dice.split('d'))
-        except Exception:
-            await ctx.send('Format has to be in NdN!')
-            return
-
-        result = ', '.join(str(random.randint(1, limit)) for r in range(rolls))
-        await ctx.send(result)
-
-    async def choose(self, ctx, *choices: str):
-        """Chooses between multiple choices."""
-        await ctx.send(random.choice(choices))
-
-    async def repeat(self, ctx, times: int, content='repeating...'):
-        """Repeats a message multiple times."""
-        for i in range(times):
-            await ctx.send(content)
-
-    async def joined(self, ctx, member: discord.Member):
-        """Says when a member joined."""
-        await ctx.send('{0.name} joined in {0.joined_at}'.format(member))
-
-    async def kick(self, ctx, target_member: discord.Member):
-        """Kickea a un usuario de un canal de voz"""
-
-        if not target_member.voice:
-            await ctx.send(ctx.author.mention + " Sos boludo? No lo puedo kickear porque no esta en ningun canal de voz")
-            return
-
-        mensaje: discord.Message = await ctx.send("Se lo damo o no se lo damo?")
-        await mensaje.add_reaction(emojis["suegro"])
-        await mensaje.add_reaction(emojis["no"])
-
-        await mensaje_cargando(ctx)
-
-        mensaje_actual = await ctx.channel.fetch_message(mensaje.id)
-
-        cantidad_si = next(x for x in mensaje_actual.reactions if x.emoji.name == 'suegro').count
-        cantida_no = next(x for x in mensaje_actual.reactions if x.emoji.name == 'no').count
-
-        if cantidad_si > cantida_no:
-            # aca recien lo kickea
-            await target_member.move_to(None)
-            await ctx.send(target_member.mention + " fuiste trolleado")
-        elif cantidad_si == cantida_no:
-            await ctx.send("Hubo empate")
-        else:
-            await ctx.send("No se dio :(")
-
-
-    # @self.command()
-    # async def traer(ctx, target_member: discord.Member):
-    #     """Trae a un usuario al canal de voz actual"""
-    #     await target_member.move_to(ctx.author.voice.channel)
-    #
-    # @self.command()
-    # async def mover(ctx, target_member: discord.Member, target_channel: discord.VoiceChannel):
-    #     """Mueve a un usuario a un canal de voz"""
-    #     await target_member.move_to(target_channel)
-
-
-    async def agregar(self, ctx, *frase_nueva: str):
-        """Agrega una nueva frase """
-
-        frase_nueva = ' '.join(frase_nueva)
-        linea = time.ctime() + ' - ' + ctx.message.author.name + ': ' + frase_nueva
-        print(linea)
-        with open("nuevas-frases.txt", "a+") as text_file:
-            print(linea, file=text_file)
-            await ctx.send("Agregada con exito")
-
-
-
-
-    async def tts(self, ctx, *text: str):
-        if ctx.voice_client is None:
-            return
-        if ctx.message.author.voice.channel is None:
-            return
-        text = ' '.join(text)
-        tts_es = gTTS(text, lang='es')
-        tts_es.save('temp.mp3')
-        #os.system("sox temp.mp3 temp.mp3 speed 0.95 rate 24k pitch -850 reverb 60 50 75")
-        #os.system("ffmpeg -hide_banner -loglevel panic -i temp.mp3 -y -c copy output.mp3")
-        source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('temp.mp3'))
-        ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
-
-
-    async def x(self, ctx):
-        messages = await ctx.channel.history(limit=123).flatten()
-        for message in messages:
-            if message.author.id == self.user.id:
-                await message.delete()
-
-    async def s(self, ctx):
-        await ctx.send("Link del stream:\nhttps://discordapp.com/channels/432329008957358101/470075380141654026")
 
 
     def saludar_cumples(self):
@@ -400,6 +292,7 @@ class TekeBot(commands.Bot):
         while True:
             schedule.run_pending()
             await asyncio.sleep(60)  # task runs every 60 seconds
+
 
 if __name__ == '__main__':
     client = TekeBot()
