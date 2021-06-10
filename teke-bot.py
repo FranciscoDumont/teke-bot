@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from googletrans import Translator
+# from googletrans import Translator
+from google_trans_new import google_translator
+
 import schedule
 import aiml
+import cleverbotfree
 from gtts import gTTS
 
 import config
@@ -10,6 +13,8 @@ from cogs.utils import database
 from cogs.utils import frasesTeke
 from cogs.utils.storyTeke import personas
 from cogs.utils.text import *
+
+from trading import signal
 
 from discord.ext import commands
 
@@ -21,23 +26,35 @@ Me apasiona el dinero, los cigarros y la violencia.
 
 Lista de comandos:'''
 
-traductor = Translator()
+# traductor = Translator()
+traductor = google_translator()
 
 # Load AIML kernel
-aiml_kernel = aiml.Kernel()
-aiml_kernel.learn('std-startup.xml')
-aiml_kernel.respond("LOAD AIML B")
-with open('bot.properties') as f:
-    for line in f:
-        parts = line.strip().split('=')
-        key = parts[0]
-        value = parts[1]
-        aiml_kernel.setBotPredicate(key, value)
-    print('\n\n\nTeke Seteado')
+# aiml_kernel = aiml.Kernel()
+# aiml_kernel.learn('std-startup.xml')
+# aiml_kernel.respond("LOAD AIML B")
+# with open('bot.properties') as f:
+#     for line in f:
+#         parts = line.strip().split('=')
+#         key = parts[0]
+#         value = parts[1]
+#         aiml_kernel.setBotPredicate(key, value)
+#     print('\n\n\nTeke Seteado')
+
+
+
+
+async def cleverbot(chat):
+    """Example code using cleverbotfree async api."""
+    async with cleverbotfree.async_playwright() as p_w:
+        c_b = await cleverbotfree.CleverbotAsync(p_w)
+        respuesta = await c_b.single_exchange(chat)
+        await c_b.close()
+        return respuesta
 
 emojis = {
-    "suegro": '<:suegro:569392209422581761>',
-    "otrosuegro": '<:suegro:569392209422581761>',
+    #"suegro": '<:suegro:569392209422581761>',
+    #"otrosuegro": '<:suegro:569392209422581761>',
     "lol_gatito": '😹',
     "surf": '🏄',
     "lol": '😂',
@@ -79,7 +96,7 @@ class TekeBot(commands.Bot):
         self.MAIN_SERVER = self.get_guild(config.main_server_id)
         self.MAIN_CHANNEL = self.get_channel(config.main_channel_id)
 
-        schedule.every().day.at("00:01").do(self.saludar_cumples)
+        # schedule.every().day.at("00:01").do(self.saludar_cumples)
         # create the background task and run it in the background
         self.bg_task = self.loop.create_task(self.my_background_task())
 
@@ -107,7 +124,7 @@ class TekeBot(commands.Bot):
             texto_mensaje_noemoji = re.sub(r'<:[^()]*>', '', texto_mensaje_noemoji).strip()
             try: #reemplazo los ids por los nombres de usuario
                 persona_citada = re.search(r'<@(.*)>', texto_mensaje_noemoji).group(1)
-                texto_mensaje_noemoji = re.sub(r'<@[^()]*>', database.get_campo(persona_citada.strip(), 'name'), texto_mensaje_noemoji).strip()
+                # texto_mensaje_noemoji = re.sub(r'<@[^()]*>', database.get_campo(persona_citada.strip(), 'name'), texto_mensaje_noemoji).strip()
             except:
                 pass
             if texto_mensaje_noemoji != '' and texto_mensaje_noemoji[-1] == '?':
@@ -130,15 +147,15 @@ class TekeBot(commands.Bot):
 
             if 'teke' in texto_mensaje:
                 self.TEKE = 5
-                database.teke_cont_add(message.author.id, texto_mensaje.count('teke'))
+                # database.teke_cont_add(message.author.id, texto_mensaje.count('teke'))
 
             if self.TEKE and texto_mensaje_noemoji:
                 self.TEKE = self.TEKE - 1
-                aiml_message = traductor.translate(texto_mensaje_noemoji, src='es', dest='en').text
+                aiml_message = traductor.translate(texto_mensaje_noemoji, lang_src='es', lang_tgt='en')
                 print('\taiml_message = {}'.format(aiml_message))
-                aiml_response = aiml_kernel.respond(aiml_message)
+                aiml_response = await cleverbot(aiml_message)
                 print('\taiml_response = {}'.format(aiml_response))
-                aiml_response_es = traductor.translate(aiml_response, src='en', dest='es').text
+                aiml_response_es = traductor.translate(aiml_response, lang_src='en', lang_tgt='es')
                 print('\taiml_response_es = {}'.format(aiml_response_es))
 
                 await teke_typing(message.channel)
@@ -148,22 +165,22 @@ class TekeBot(commands.Bot):
 
         if any(palabra in texto_mensaje for palabra in ['culo', 'caca']):
             #if 'culo' in texto_mensaje:
-            database.social_add(message.author.id, -10)
+            # database.social_add(message.author.id, -10)
             if self.TRISTE >= 1:
                 await self.triste_estado(message)
             else:
                 print("no puedo estar mas triste")
 
-        if str(message.author) in config.enemigos:
-            if random.randint(0, 2) == 0 and not self.TRISTE:
-                await self.enojado_estado(message)
-                database.social_add(message.author.id, -1)
-                return
+        # if str(message.author) in config.enemigos:
+            # if random.randint(0, 2) == 0 and not self.TRISTE:
+            #     await self.enojado_estado(message)
+            #     database.social_add(message.author.id, -1)
+            #     return
 
-        if database.check_mujer(message.author.id):
-            if random.randint(0, 3) == 0:
-                await self.romantico_estado(message)
-                database.social_add(message.author.id, 2)
+        # if database.check_mujer(message.author.id):
+        #     if random.randint(0, 3) == 0:
+        #         await self.romantico_estado(message)
+        #         database.social_add(message.author.id, 2)
 
         if random.randint(0, 11) == 0:
             await teke_typing(message.channel)
@@ -217,17 +234,17 @@ class TekeBot(commands.Bot):
             'cerra'
         ]
 
-        if any(palabra in message.content.lower() for palabra in amor):
-            database.social_add(message.author.id, round(random.uniform(1, 3), 2))
-            if database.check_mujer(message.author.id):
-                database.social_add(message.author.id, 2)
-                #print(respuesta_amor)
-            elif database.get_campo(message.author.id, 'social') >= 75.0 :
-                database.social_add(message.author.id, 2)
-                #print(respuesta_gay)
-
-        if any(palabra in message.content.lower() for palabra in odio):
-            database.social_add(message.author.id, -2)
+        # if any(palabra in message.content.lower() for palabra in amor):
+        #     database.social_add(message.author.id, round(random.uniform(1, 3), 2))
+        #     if database.check_mujer(message.author.id):
+        #         database.social_add(message.author.id, 2)
+        #         #print(respuesta_amor)
+        #     elif database.get_campo(message.author.id, 'social') >= 75.0 :
+        #         database.social_add(message.author.id, 2)
+        #         #print(respuesta_gay)
+        #
+        # if any(palabra in message.content.lower() for palabra in odio):
+        #     database.social_add(message.author.id, -2)
 
 
     async def triste_estado(self, message):
@@ -291,7 +308,15 @@ class TekeBot(commands.Bot):
         await self.wait_until_ready()
         while True:
             schedule.run_pending()
-            await asyncio.sleep(60)  # task runs every 60 seconds
+
+            senial_de_trading = signal()
+            canal_de_inversiones = self.get_channel(687155197080109058)
+            rol_inversor = "<@&687155503855304721>"
+            if senial_de_trading:
+                await canal_de_inversiones.send(rol_inversor + "\n" + senial_de_trading)
+
+
+            await asyncio.sleep(60 * 60)  # task runs every 60 minutes
 
 
 if __name__ == '__main__':

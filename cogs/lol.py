@@ -149,8 +149,8 @@ class LOL(commands.Cog):
         boke = rule34.Rule34(loop)
 
         try:
-            urls = await boke.getImageURLS(choices, singlePage=True, randomPID=True)
-            rule34_url = random.choice(urls)
+            rule34_posts = await boke.getImages(choices, singlePage=True, randomPID=True)
+            rule34_url = random.choice(rule34_posts).file_url
         except Exception:
             await ctx.send("No encontré eso")
             return
@@ -229,11 +229,19 @@ class LOL(commands.Cog):
     @commands.command()
     async def quote(self, ctx, autor: str = ''):
         """Manda una frase de un filosofo"""
-        autores = ['Séneca', 'El_arte_de_la_guerra', 'Charly_García', 'Carlos_Menem', 'Epicteto', 'Sócrates',
+        autores = ['Séneca', 'El_arte_de_la_guerra', 'Carlos_Menem', 'Epicteto', 'Sócrates',
                    'Stephen_King',
                    'Bruce_Lee', 'Diego_Armando_Maradona', 'Ricardo_Iorio', 'Naruto:_Shippūden', 'Nach',
                    'Jorge_Luis_Borges',
                    'Oscar_Wilde',
+                   'Platón',
+                   'Francisco_de_Quevedo',
+                   'Soledad',
+                   'Domingo_Cavallo',
+                   'Friedrich_Nietzsche',
+                   'Sexualidad',
+                   'José_Mujica',
+                   'Milton_Friedman',
                    'Jostein_Gaarder', 'Jesús_de_Nazaret', 'Ateísmo', 'Charles_Darwin', 'Stephen_Hawking',
                    'Gabriel_García_Márquez',
                    'Sigmund_Freud', 'El_guardián_entre_el_centeno', 'Charles_Bukowski', 'Confucio', 'Dale_Carnegie']
@@ -244,7 +252,19 @@ class LOL(commands.Cog):
         frases = wikiquote.quotes(autor, lang='es', max_quotes=0)
 
         print("Autor: {} Cant: {}".format(str(autor), len(frases)))
-        await ctx.send(random.choice(frases))
+
+        # Devuelve True si es mala
+        def fail_condition(msj):
+            prohibido = ['isbn',
+                         'Obras de don Francisco',
+                         'Reunido en Oviedo']
+            return any(word in msj.lower() for word in prohibido)
+
+        choice = random.choice(frases)
+        while fail_condition(choice):
+            choice = random.choice(frases)
+
+        await ctx.send(choice)
 
     @commands.command()
     async def agregar(self, ctx, *frase_nueva: str):
